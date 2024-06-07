@@ -1,0 +1,45 @@
+name: kanban_tracker
+description: "Kanban task tracker"
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # network
+  dio: ^5.4.3+1
+
+  # state management 
+  flutter_bloc: ^8.1.5
+
+  # ui
+  flutter_boardview: ^0.2.1
+  infinite_scroll_pagination: ^4.0.0
+
+  #service locator
+  get_it: ^7.7.0
+  intl: ^0.19.0
+  flutter_localizations:
+    sdk: flutter
+  fluttertoast: ^8.2.6
+  uuid: ^4.4.0
+
+  
+
+dev_dependencies:
+  bloc_test: ^9.1.7
+  build_runner: ^2.4.10
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
+  mockito: ^5.4.4
+  
+
+flutter:
+  generate: true
+
+  uses-material-design: true

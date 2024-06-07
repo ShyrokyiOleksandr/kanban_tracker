@@ -1,0 +1,14 @@
+{ "@@locale": "uk",
+  "appbarTitle": "Особиста дошка",
+  "bnbLabelKanban": "Канбан",
+  "bnbLabelHistory": "Історія",
+  "actionClose": "Закрити",
+  "actionSave": "Зберегти",
+  "actionSelect": "Вибрати",
+  "actionCancel": "Відмінити",
+  "fieldTitleTitle": "Заголовок",
+  "fieldTitleDueDate": "Виконати до",
+  "fieldTitleDescription": "Опис",
+  "textNewTask": "Нове завдання",
+  "prefixTask": "Завдання"
+}

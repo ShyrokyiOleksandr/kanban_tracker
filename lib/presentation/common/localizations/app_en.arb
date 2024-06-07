@@ -1,0 +1,14 @@
+{ "@@locale": "en",
+  "appbarTitle": "Personal board",
+  "bnbLabelKanban": "Kanban",
+  "bnbLabelHistory": "History",
+  "actionClose": "Close",
+  "actionSave": "Save",
+  "actionSelect": "Select",
+  "actionCancel": "Cancel",
+  "fieldTitleTitle": "Title",
+  "fieldTitleDueDate": "Due date",
+  "fieldTitleDescription": "Description",
+  "textNewTask": "New task",
+  "prefixTask": "Task"
+}

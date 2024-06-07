@@ -1,0 +1,6 @@
+App:
+! Add auto_route (maybe)
+
+
+Board:
+! Change card
