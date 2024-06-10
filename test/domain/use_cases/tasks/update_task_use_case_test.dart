@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanban_tracker/domain/entities/task_entity.dart';
 import 'package:kanban_tracker/domain/errors/failure.dart';
-import 'package:kanban_tracker/domain/use_cases/tasks/create_task_use_case.dart';
+import 'package:kanban_tracker/domain/use_cases/tasks/update_task_use_case.dart';
 import 'package:mockito/mockito.dart';
 
 import '../../../_helpers/mocks/mock_source.mocks.dart';
 
 void main() {
   late MockITaskRepository mockITaskRepository;
-  late CreateTaskUseCase createTaskUseCase;
+  late UpdateTaskUseCase _updateTaskUseCase;
 
   setUp(() {
     mockITaskRepository = MockITaskRepository();
-    createTaskUseCase = CreateTaskUseCase(
+    _updateTaskUseCase = UpdateTaskUseCase(
       iTaskRepository: mockITaskRepository,
     );
   });
@@ -35,14 +35,14 @@ void main() {
     sectionId: "7025",
     url: "https://todoist.com/showTask?id=2995104339",
   );
-  group("Create a task", () {
+  group("Update a task", () {
     test(
       'Should return (TaskEntity, null) if call to repository is successful',
       () async {
-        when(mockITaskRepository.createTask(task: testTaskEntity))
+        when(mockITaskRepository.updateTask(task: testTaskEntity))
             .thenAnswer((_) async => (testTaskEntity, null));
 
-        final result = await createTaskUseCase.execute(task: testTaskEntity);
+        final result = await _updateTaskUseCase.execute(task: testTaskEntity);
 
         expect(result, (testTaskEntity, null));
       },
@@ -51,11 +51,11 @@ void main() {
     test(
       'Should return (null, ServerFailure) if call to repository is unsuccessful ',
       () async {
-        when(mockITaskRepository.createTask(task: testTaskEntity)).thenAnswer(
+        when(mockITaskRepository.updateTask(task: testTaskEntity)).thenAnswer(
             (_) async =>
                 (null, const ServerFailure(message: "Server failure")));
 
-        final result = await createTaskUseCase.execute(task: testTaskEntity);
+        final result = await _updateTaskUseCase.execute(task: testTaskEntity);
 
         expect(result, (null, const ServerFailure(message: "Server failure")));
       },

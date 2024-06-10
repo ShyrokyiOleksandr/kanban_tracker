@@ -6,9 +6,15 @@
   "actionSave": "Зберегти",
   "actionSelect": "Вибрати",
   "actionCancel": "Відмінити",
+  "actionDelete": "Видалити",
   "fieldTitleTitle": "Заголовок",
   "fieldTitleDueDate": "Виконати до",
   "fieldTitleDescription": "Опис",
+  "fieldTitleLabels": "Мітки",
   "textNewTask": "Нове завдання",
-  "prefixTask": "Завдання"
+  "prefixTask": "Завдання",
+  "selectDateTitle": "Вибрати дату",
+  "tryAgainAction": "Спробувати ще раз",
+  "validationFieldNotEmpty": "Поле не має бути пустим",
+  "validationLabelNotEmpty": "Мітка не має бути пустою"
 }

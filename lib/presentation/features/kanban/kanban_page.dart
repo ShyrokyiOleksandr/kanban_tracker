@@ -5,10 +5,13 @@ import 'package:flutter_boardview/board_list.dart';
 import 'package:flutter_boardview/boardview.dart';
 import 'package:flutter_boardview/boardview_controller.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kanban_tracker/data/data_sources/remote/app_url_constants.dart';
 import 'package:kanban_tracker/domain/entities/section_entity.dart';
 import 'package:kanban_tracker/domain/entities/task_entity.dart';
 import 'package:kanban_tracker/presentation/common/extensions/build_context_extensions.dart';
 import 'package:kanban_tracker/presentation/common/widgets/bottom_sheets/app_bottom_sheet.dart';
+import 'package:kanban_tracker/presentation/common/widgets/failure_display.dart';
+import 'package:kanban_tracker/presentation/common/widgets/loading_display.dart';
 import 'package:kanban_tracker/presentation/features/kanban/bloc/kanban_cubit.dart';
 import 'package:kanban_tracker/presentation/features/kanban/bloc/kanban_state.dart';
 import 'package:kanban_tracker/presentation/features/kanban/widgets/board/board_card.dart';
@@ -51,13 +54,11 @@ class _KanbanPageState extends State<KanbanPage> {
         bloc: _pageBloc,
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingDisplay();
           } else if (state.loadingFailure != null) {
-            return Center(
-              child: ElevatedButton(
-                onPressed: () {},
-                child: const Text("Error"),
-              ),
+            return FailureDisplay(
+              message: state.loadingFailure!.message,
+              onPressed: _pageBloc.reloadData,
             );
           } else {
             _listData = _distributeBoardData(
@@ -67,7 +68,8 @@ class _KanbanPageState extends State<KanbanPage> {
 
             List<BoardList> boardLists = [];
             for (int i = 0; i < _listData.length; i++) {
-              boardLists.add(_createBoardList(_listData[i]) as BoardList);
+              boardLists.add(
+                  _createBoardList(_listData[i], state.sections) as BoardList);
             }
             return BoardView(
               boardViewController: _boardViewController,
@@ -88,11 +90,12 @@ class _KanbanPageState extends State<KanbanPage> {
       final items = tasks
           .where((task) => task.sectionId == section.id)
           .map((task) => BoardItemModel(
-                id: int.tryParse(task.id),
+                id: task.id ?? "",
                 title: task.content,
                 subtitle:
-                    task.due != null ? task.due!['string'] : 'No due date',
+                    task.dueString != null ? task.dueString! : 'No due date',
                 description: task.description,
+                labels: task.labels,
               ))
           .toList();
 
@@ -104,10 +107,10 @@ class _KanbanPageState extends State<KanbanPage> {
     }).toList();
   }
 
-  Widget _createBoardList(BoardListModel list) {
+  Widget _createBoardList(BoardListModel list, List<SectionEntity> sections) {
     List<BoardItem> items = [];
     for (int i = 0; i < list.items.length; i++) {
-      items.insert(i, buildBoardItem(list.items[i]) as BoardItem);
+      items.insert(i, buildBoardItem(list.items[i], sections) as BoardItem);
     }
 
     return BoardList(
@@ -132,7 +135,10 @@ class _KanbanPageState extends State<KanbanPage> {
     );
   }
 
-  Widget buildBoardItem(BoardItemModel itemObject) {
+  Widget buildBoardItem(
+    BoardItemModel itemObject,
+    List<SectionEntity> sections,
+  ) {
     return BoardItem(
       draggable: true,
       onStartDragItem: (
@@ -159,7 +165,7 @@ class _KanbanPageState extends State<KanbanPage> {
       ) async {},
       item: BoardCard(
         item: itemObject,
-        onTap: () => _editTask(itemObject),
+        onTap: () => _updateTask(itemObject, sections),
       ),
     );
   }
@@ -171,19 +177,74 @@ class _KanbanPageState extends State<KanbanPage> {
     _listData.insert(listIndex!, list);
   }
 
-  void _editTask(BoardItemModel itemModel) {
-    final result = AppBottomSheet.showModal(
-      context: context,
-      child: TaskForm(itemModel: itemModel),
-      paddingRatio: 0.4,
-    );
-  }
-
-  void _createTask() {
-    final result = AppBottomSheet.showModal(
+  // TODO: add event to history
+  void _createTask() async {
+    // TODO: add labels and priority to form
+    // TODO: add timer to form
+    final result = await AppBottomSheet.showModal<(String, DateTime?, String)?>(
       context: context,
       child: const TaskForm(),
-      paddingRatio: 0.4,
     );
+
+    if (result != null) {
+      final task = TaskEntity(
+        projectId: AppUrlConstants.projectId,
+        sectionId: _pageBloc.state.sections.first.id,
+        content: result.$1,
+        description: result.$3,
+        dueDateTime: result.$2,
+        labels: [],
+      );
+      _pageBloc.createTask(task: task);
+    }
+  }
+
+  // TODO: add event to history
+  void _updateTask(
+      BoardItemModel itemModel, List<SectionEntity> sections) async {
+    print("sections => $sections");
+    final result =
+        await AppBottomSheet.showModal<(String?, String, DateTime?, String)?>(
+      context: context,
+      child: TaskForm(
+        itemModel: itemModel,
+        sections: sections,
+        onDeleteTask: () => _deleteTask(taskId: itemModel.id),
+      ),
+    );
+
+    if (result != null) {
+      SectionEntity? section;
+      if (result.$1 != null) {
+        section = sections.firstWhere(
+          (section) => section.id == result.$1,
+          orElse: () => sections.isNotEmpty
+              ? sections[0]
+              : throw Exception(
+                  "No sections available",
+                ), // Handle empty sections list
+        );
+      }
+
+      if (section != null) {
+        final task = TaskEntity(
+          id: result.$1,
+          projectId: AppUrlConstants.projectId,
+          sectionId: section.id,
+          content: result.$2,
+          description: result.$4,
+          dueDateTime: result.$3,
+          labels: [],
+        );
+        _pageBloc.updateTask(task: task);
+      } else {
+        // Handle the case where no section was found
+        print('No matching section found for the given section id');
+      }
+    }
+  }
+
+  void _deleteTask({required String taskId}) {
+    _pageBloc.deleteTask(taskId: taskId);
   }
 }

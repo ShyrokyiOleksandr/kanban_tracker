@@ -1,21 +1,27 @@
 import 'dart:math';
 
 class BoardItemModel {
-  final int? id;
+  final String id;
   final String title;
   final String subtitle;
   final String description;
+  final List<String> labels;
 
-  BoardItemModel(
-      {this.id,
-      required this.title,
-      required this.subtitle,
-      required this.description});
+  BoardItemModel({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.description,
+    required this.labels,
+  });
 
   static BoardItemModel stub() {
     return BoardItemModel(
-        title: "Task #${Random().nextInt(100)}",
-        subtitle: "Subtitle of task",
-        description: "Description of task");
+      id: "Task #${Random().nextInt(100)}",
+      title: "Task #${Random().nextInt(100)}",
+      subtitle: "Subtitle of task",
+      description: "Description of task",
+      labels: ["Shopping"],
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kanban_tracker/presentation/common/extensions/build_context_extensions.dart';
 import 'package:kanban_tracker/presentation/features/history/history_page.dart';
 import 'package:kanban_tracker/presentation/features/kanban/kanban_page.dart';
 
@@ -29,11 +30,11 @@ class _MainPageState extends State<MainPage> {
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_on, color: _bottomNavigationColor),
-              label: "Kanban",
+              label: context.strings.bnbLabelKanban,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.history, color: _bottomNavigationColor),
-              label: "History",
+              label: context.strings.bnbLabelHistory,
             ),
           ],
           onTap: (int index) {

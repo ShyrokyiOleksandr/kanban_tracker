@@ -5,4 +5,8 @@ abstract interface class ITaskRepository {
   Future<(List<TaskEntity>?, Failure?)> getAllTasks();
 
   Future<(TaskEntity?, Failure?)> createTask({required TaskEntity task});
+
+  Future<(TaskEntity?, Failure?)> updateTask({required TaskEntity task});
+
+  Future<(bool?, Failure?)> deleteTask({required String taskId});
 }

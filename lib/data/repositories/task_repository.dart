@@ -35,4 +35,28 @@ class TaskRepository implements ITaskRepository {
       return const (null, ConnectionFailure(message: "Connection failure"));
     }
   }
+
+  @override
+  Future<(TaskEntity?, Failure?)> updateTask({required TaskEntity task}) async {
+    try {
+      final model = await _remoteDataSource.updateTask(task: task);
+      return (model.toDomain(), null);
+    } on ServerException {
+      return const (null, ServerFailure(message: "Server failure"));
+    } on ConnectionException {
+      return const (null, ConnectionFailure(message: "Connection failure"));
+    }
+  }
+
+  @override
+  Future<(bool?, Failure?)> deleteTask({required String taskId}) async {
+    try {
+      final result = await _remoteDataSource.deleteTask(taskId: taskId);
+      return (result, null);
+    } on ServerException {
+      return const (null, ServerFailure(message: "Server failure"));
+    } on ConnectionException {
+      return const (null, ConnectionFailure(message: "Connection failure"));
+    }
+  }
 }

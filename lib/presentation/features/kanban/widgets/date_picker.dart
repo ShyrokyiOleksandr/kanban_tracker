@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kanban_tracker/presentation/common/extensions/build_context_extensions.dart';
 import 'package:kanban_tracker/presentation/common/widgets/buttons/sheet_header_button.dart';
 import 'package:kanban_tracker/presentation/common/widgets/custom_divider.dart';
 
@@ -26,19 +27,19 @@ class _DatePickerState extends State<DatePicker> {
             children: [
               SheetHeaderButton(
                 onPressed: Navigator.of(context).pop,
-                text: "Cancel",
+                text: context.strings.actionCancel,
                 color: Colors.black87,
               ),
               Align(
                 alignment: Alignment.topCenter,
                 child: Text(
-                  "Select date",
+                  context.strings.selectDateTitle,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
               SheetHeaderButton(
                 onPressed: _selectDate,
-                text: "Select",
+                text: context.strings.actionSelect,
                 color: Colors.red,
               ),
             ],

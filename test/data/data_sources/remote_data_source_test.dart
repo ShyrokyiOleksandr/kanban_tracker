@@ -7,24 +7,20 @@ import 'package:kanban_tracker/data/models/section_model.dart';
 import 'package:kanban_tracker/data/models/task_model.dart';
 import 'package:kanban_tracker/domain/entities/task_entity.dart';
 import 'package:mockito/mockito.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../_helpers/dummy_data/dummy_path_constants.dart';
 import '../../_helpers/json_reader.dart';
 import '../../_helpers/mocks/mock_source.mocks.dart';
 
-// TODO: Fix "FakeUsedError: 'dio' No stub was found which matches the argument of  method call"
 void main() {
-  late MockDioClientService mockDioService;
-  late Uuid uuid;
+  late MockDio mockDio;
   late RemoteDataSource remoteDataSource;
 
   setUp(() {
-    mockDioService = MockDioClientService();
-    uuid = const Uuid();
+    mockDio = MockDio();
     remoteDataSource = RemoteDataSource(
-      dioClientService: mockDioService,
-      uuid: uuid,
+      apiClient: mockDio,
+      isApiClientMocked: true,
     );
   });
 
@@ -36,7 +32,7 @@ void main() {
         final responseStub =
             '[${readJsonFile(DummyPathConstants.dummySectionResponse)} ]';
 
-        when(mockDioService.dio.get(
+        when(mockDio.get(
           AppUrlConstants.sections,
           options: anyNamed('options'),
         )).thenAnswer((_) async => Response<dynamic>(
@@ -57,13 +53,13 @@ void main() {
       'Should throw a ServerException when response code is 404 or other',
       () async {
         // arrange
-        when(mockDioService.dio.get(
+        when(mockDio.get(
           AppUrlConstants.sections,
           options: anyNamed('options'),
         )).thenAnswer((_) async => Response<dynamic>(
               requestOptions: RequestOptions(path: AppUrlConstants.sections),
               data: 'Not Found',
-              statusCode: 200,
+              statusCode: 404,
             ));
 
         // act & assert
@@ -81,7 +77,7 @@ void main() {
         final responseStub =
             '[${readJsonFile(DummyPathConstants.dummyTaskResponse)} ]';
 
-        when(mockDioService.dio.get(
+        when(mockDio.get(
           AppUrlConstants.tasks,
           options: anyNamed('options'),
         )).thenAnswer((_) async => Response<dynamic>(
@@ -102,13 +98,13 @@ void main() {
       'Should throw a ServerException when response code is 404 or other',
       () async {
         // arrange
-        when(mockDioService.dio.get(
+        when(mockDio.get(
           AppUrlConstants.tasks,
           options: anyNamed('options'),
         )).thenAnswer((_) async => Response<dynamic>(
               requestOptions: RequestOptions(path: AppUrlConstants.tasks),
               data: 'Not Found',
-              statusCode: 200,
+              statusCode: 404,
             ));
 
         // act & assert
@@ -117,31 +113,23 @@ void main() {
     );
   });
 
-  group("Create task", () {
+  group("Create a task", () {
     final testTaskEntity = TaskEntity(
       creatorId: "2671355",
       createdAt: DateTime.parse("2019-12-11T22:36:50.000000Z"),
-      assigneeId: "2671362",
-      assignerId: "2671355",
       commentCount: 10,
       isCompleted: false,
       content: "Buy Milk",
       description: "",
-      due: {
-        "date": "2016-09-01",
-        "isRecurring": false,
-        "datetime": "2016-09-01T12:00:00.000000Z",
-        "string": "tomorrow at 12",
-        "timezone": "Europe/Kiev"
-      },
-      duration: null,
+      dueString: "tomorrow at 12",
+      dueDateTime: DateTime.parse("2019-12-11T22:36:50.000000Z"),
+      durationAmount: 15,
       id: "2995104339",
       labels: ["Food", "Shopping"],
       order: 1,
       priority: 1,
       projectId: "2203306141",
       sectionId: "7025",
-      parentId: "2995104589",
       url: "https://todoist.com/showTask?id=2995104339",
     );
     test(
@@ -150,7 +138,7 @@ void main() {
         // arrange
         final responseStub = readJsonFile(DummyPathConstants.dummyTaskResponse);
 
-        when(mockDioService.dio.post(
+        when(mockDio.post(
           AppUrlConstants.tasks,
           data: TaskModel.fromDomain(testTaskEntity).toJson(),
           options: anyNamed('options'),
@@ -164,7 +152,7 @@ void main() {
         final result = await remoteDataSource.createTask(task: testTaskEntity);
 
         // assert
-        expect(result, isA<List<TaskModel>>());
+        expect(result, isA<TaskModel>());
       },
     );
 
@@ -172,17 +160,133 @@ void main() {
       'Should throw a ServerException when response code is 404 or other',
       () async {
         // arrange
-        when(mockDioService.dio.get(
+
+        when(mockDio.post(
           AppUrlConstants.tasks,
+          data: TaskModel.fromDomain(testTaskEntity).toJson(),
           options: anyNamed('options'),
         )).thenAnswer((_) async => Response<dynamic>(
               requestOptions: RequestOptions(path: AppUrlConstants.tasks),
-              data: 'Not Found',
-              statusCode: 200,
+              data: "Not found",
+              statusCode: 404,
             ));
 
         // act & assert
-        expect(remoteDataSource.getAllTasks(), throwsA(isA<ServerException>()));
+        expect(remoteDataSource.createTask(task: testTaskEntity),
+            throwsA(isA<ServerException>()));
+      },
+    );
+  });
+
+  group("Update a task", () {
+    final testTaskEntity = TaskEntity(
+      creatorId: "2671355",
+      createdAt: DateTime.parse("2019-12-11T22:36:50.000000Z"),
+      commentCount: 10,
+      isCompleted: false,
+      content: "Buy Milk",
+      description: "",
+      dueString: "tomorrow at 12",
+      dueDateTime: DateTime.parse("2019-12-11T22:36:50.000000Z"),
+      durationAmount: 15,
+      id: "2995104339",
+      labels: ["Food", "Shopping"],
+      order: 1,
+      priority: 1,
+      projectId: "2203306141",
+      sectionId: "7025",
+      url: "https://todoist.com/showTask?id=2995104339",
+    );
+    test(
+      'Should return TaskModel when response code is 200',
+      () async {
+        // arrange
+        final responseStub = readJsonFile(DummyPathConstants.dummyTaskResponse);
+
+        when(mockDio.post(
+          '${AppUrlConstants.tasks}/${testTaskEntity.id}',
+          data: TaskModel.fromDomain(testTaskEntity).toJson(),
+          options: anyNamed('options'),
+        )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: AppUrlConstants.tasks),
+              data: responseStub,
+              statusCode: 200,
+            ));
+
+        // act
+        final result = await remoteDataSource.updateTask(task: testTaskEntity);
+
+        // assert
+        expect(result, isA<TaskModel>());
+      },
+    );
+
+    test(
+      'Should throw a ServerException when response code is 404 or other',
+      () async {
+        // arrange
+
+        when(mockDio.post(
+          '${AppUrlConstants.tasks}/${testTaskEntity.id}',
+          data: TaskModel.fromDomain(testTaskEntity).toJson(),
+          options: anyNamed('options'),
+        )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(
+                  path: '${AppUrlConstants.tasks}/${testTaskEntity.id}'),
+              data: "Not found",
+              statusCode: 404,
+            ));
+
+        // act & assert
+        expect(remoteDataSource.updateTask(task: testTaskEntity),
+            throwsA(isA<ServerException>()));
+      },
+    );
+  });
+
+  group("Delete a task", () {
+    const testTaskEntityId = "2995104339";
+    test(
+      'Should return true when response code is 204',
+      () async {
+        // arrange
+        when(mockDio.delete(
+          '${AppUrlConstants.tasks}/$testTaskEntityId',
+          options: anyNamed('options'),
+        )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(
+                  path: '${AppUrlConstants.tasks}/$testTaskEntityId'),
+              statusCode: 204,
+            ));
+
+        // act
+        final result =
+            await remoteDataSource.deleteTask(taskId: testTaskEntityId);
+
+        // assert
+        expect(result, true);
+      },
+    );
+
+    test(
+      'Should throw a ServerException when response code is 404 or other',
+      () async {
+        // arrange
+
+        when(mockDio.delete(
+          '${AppUrlConstants.tasks}/$testTaskEntityId',
+          options: anyNamed('options'),
+        )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(
+                path: '${AppUrlConstants.tasks}/$testTaskEntityId',
+              ),
+              data: "Not found",
+              statusCode: 404,
+            ));
+
+        // act & assert
+        expect(remoteDataSource.deleteTask(taskId: testTaskEntityId),
+            throwsA(isA<ServerException>()));
       },
     );
   });

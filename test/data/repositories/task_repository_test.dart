@@ -20,29 +20,23 @@ void main() {
   // Define a sample TaskModel object for testing.
   final testTaskModels = [
     TaskModel(
-      creatorId: "2671355",
-      createdAt: "2019-12-11T22:36:50.000000Z",
-      assigneeId: "2671362",
-      assignerId: "2671355",
-      commentCount: 10,
-      isCompleted: false,
-      content: "Buy Milk",
-      description: "",
-      due: {
-        "date": "2016-09-01",
-        "isRecurring": false,
-        "datetime": "2016-09-01T12:00:00.000000Z",
-        "string": "tomorrow at 12",
-        "timezone": "Europe/Kiev"
-      },
-      duration: null,
-      id: "2995104339",
-      labels: ["Food", "Shopping"],
-      order: 1,
-      priority: 1,
       projectId: "2203306141",
       sectionId: "7025",
-      parentId: "2995104589",
+      content: "Buy Milk",
+      description: "",
+      labels: ["Food", "Shopping"],
+      isCompleted: false,
+      order: 1,
+      priority: 1,
+      due: {
+        "datetime": "2019-12-11 22:36:50.000Z",
+        "string": "tomorrow at 12",
+      },
+      duration: {"amount": 15, "unit": "minute"},
+      id: "2995104339",
+      creatorId: "2671355",
+      createdAt: "2019-12-11T22:36:50.000Z",
+      commentCount: 10,
       url: "https://todoist.com/showTask?id=2995104339",
     ),
   ];
@@ -50,29 +44,21 @@ void main() {
   // Define a sample TaskEntity object for testing.
   final testTaskEntities = [
     TaskEntity(
-      creatorId: "2671355",
-      createdAt: DateTime.parse("2019-12-11T22:36:50.000000Z"),
-      assigneeId: "2671362",
-      assignerId: "2671355",
-      commentCount: 10,
-      isCompleted: false,
-      content: "Buy Milk",
-      description: "",
-      due: {
-        "date": "2016-09-01",
-        "isRecurring": false,
-        "datetime": "2016-09-01T12:00:00.000000Z",
-        "string": "tomorrow at 12",
-        "timezone": "Europe/Kiev"
-      },
-      duration: null,
-      id: "2995104339",
-      labels: ["Food", "Shopping"],
-      order: 1,
-      priority: 1,
       projectId: "2203306141",
       sectionId: "7025",
-      parentId: "2995104589",
+      content: "Buy Milk",
+      description: "",
+      labels: ["Food", "Shopping"],
+      isCompleted: false,
+      order: 1,
+      priority: 1,
+      dueDateTime: DateTime.tryParse("2019-12-11T22:36:50.000Z"),
+      dueString: "tomorrow at 12",
+      durationAmount: 15,
+      id: "2995104339",
+      creatorId: "2671355",
+      createdAt: DateTime.tryParse("2019-12-11T22:36:50.000Z"),
+      commentCount: 10,
       url: "https://todoist.com/showTask?id=2995104339",
     ),
   ];
@@ -110,6 +96,111 @@ void main() {
           result.$2,
           equals(const ServerFailure(message: "Server failure")),
         );
+      },
+    );
+  });
+
+  group("Create a task", () {
+    test(
+      'Should return a  TaskEntity when a call to data source is successful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.createTask(task: testTaskEntities[0]))
+            .thenAnswer((_) async => testTaskModels[0]);
+
+        // act
+        final result =
+            await taskRepository.createTask(task: testTaskEntities[0]);
+
+        // assert
+        expect(result, equals((testTaskEntities[0], null)));
+      },
+    );
+
+    test(
+      'Should return a ServerFailure when a call to data source is unsuccessful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.createTask(task: testTaskEntities[0]))
+            .thenThrow(const ServerException(message: 'Failed to load tasks.'));
+
+        // act
+        final result =
+            await taskRepository.createTask(task: testTaskEntities[0]);
+
+        // assert
+        expect(result,
+            equals((null, const ServerFailure(message: "Server failure"))));
+      },
+    );
+  });
+
+  group("Update a task", () {
+    test(
+      'Should return a TaskEntity when a call to data source is successful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.updateTask(task: testTaskEntities[0]))
+            .thenAnswer((_) async => testTaskModels[0]);
+
+        // act
+        final result =
+            await taskRepository.updateTask(task: testTaskEntities[0]);
+
+        // assert
+        expect(result, equals((testTaskEntities[0], null)));
+      },
+    );
+
+    test(
+      'Should return a ServerFailure when a call to data source is unsuccessful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.updateTask(task: testTaskEntities[0]))
+            .thenThrow(const ServerException(message: 'Failed to load tasks.'));
+
+        // act
+        final result =
+            await taskRepository.updateTask(task: testTaskEntities[0]);
+
+        // assert
+        expect(result,
+            equals((null, const ServerFailure(message: "Server failure"))));
+      },
+    );
+  });
+
+  group("Delete a task", () {
+    test(
+      'Should return (true, null) when a call to data source is successful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.deleteTask(taskId: testTaskEntities[0].id))
+            .thenAnswer((_) async => true);
+
+        // act
+        final result =
+            await taskRepository.deleteTask(taskId: testTaskEntities[0].id!);
+
+        // assert
+        expect(result, equals((true, null)));
+      },
+    );
+
+    test(
+      'Should return (null, ServerFailure) when a call to data source is unsuccessful',
+      () async {
+        // arrange
+        when(mockRemoteDataSource.deleteTask(taskId: testTaskEntities[0].id))
+            .thenThrow(const ServerException(message: 'Failed to load tasks.'));
+
+        // act
+        final result =
+            await taskRepository.deleteTask(taskId: testTaskEntities[0].id!);
+
+        // assert
+        expect(result,
+            equals((null, const ServerFailure(message: "Server failure"))));
       },
     );
   });

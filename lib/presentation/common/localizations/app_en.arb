@@ -6,9 +6,15 @@
   "actionSave": "Save",
   "actionSelect": "Select",
   "actionCancel": "Cancel",
+  "actionDelete": "Delete",
   "fieldTitleTitle": "Title",
   "fieldTitleDueDate": "Due date",
   "fieldTitleDescription": "Description",
+  "fieldTitleLabels": "Labels",
   "textNewTask": "New task",
-  "prefixTask": "Task"
+  "prefixTask": "Task",
+  "selectDateTitle": "Select date",
+  "tryAgainAction": "Try again",
+  "validationFieldNotEmpty": "The field should not be empty",
+  "validationLabelNotEmpty": "The label should not be empty"
 }

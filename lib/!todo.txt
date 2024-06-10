@@ -1,5 +1,14 @@
 App:
+! Add local storage
+! Add history use cases (only local)
+! Add comments use cases
+! Fine tune card view
 ! Add auto_route (maybe)
+! Check response codes (i.e. 204 for delete)
+! Make common widgets and files named with app_ App
+! Add documentation to code via ChatGPG
+
+
 
 
 Board:

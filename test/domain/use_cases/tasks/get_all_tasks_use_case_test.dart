@@ -30,27 +30,19 @@ void main() {
     TaskEntity(
       creatorId: "2671355",
       createdAt: DateTime.parse("2019-12-11T22:36:50.000000Z"),
-      assigneeId: "2671362",
-      assignerId: "2671355",
       commentCount: 10,
       isCompleted: false,
       content: "Buy Milk",
       description: "",
-      due: {
-        "date": "2016-09-01",
-        "isRecurring": false,
-        "datetime": "2016-09-01T12:00:00.000000Z",
-        "string": "tomorrow at 12",
-        "timezone": "Europe/Kiev"
-      },
-      duration: null,
+      dueString: "tomorrow at 12",
+      dueDateTime: DateTime.parse("2019-12-11T22:36:50.000000Z"),
+      durationAmount: 15,
       id: "2995104339",
       labels: ["Food", "Shopping"],
       order: 1,
       priority: 1,
       projectId: "2203306141",
       sectionId: "7025",
-      parentId: "2995104589",
       url: "https://todoist.com/showTask?id=2995104339",
     )
   ];
